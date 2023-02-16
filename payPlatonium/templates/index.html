@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Payment Processing Platform</title>
+    <style>
+      form {
+        width: 50%;
+        margin: 0 auto;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+
+<head>
+   <style>
+   	h1{
+       margin: auto;
+       width: 400px;
+       background: white;
+    }
+   </style>
+</head>
+<body>
+	<div>
+    	<h1>Make a Payment</h1>
+    </div>
+</body>
+
+    <form action="{{ url_for('process_payment') }}" method="post">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      <br><br>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+      <br><br>
+      <label for="description">Description of payment:</label>
+      <input type="text" id="description" name="description" required>
+      <br><br>
+      <label for="manager_name">Name and surname of the manager signing the payment requisition:</label>
+      <input type="text" id="manager_name" name="manager_name" required>
+      <br><br>
+      <label for="manager_signature">Signature of manager:</label>
+      <input type="text" id="manager_signature" name="manager_signature" required>
+      <br><br>
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>
+
