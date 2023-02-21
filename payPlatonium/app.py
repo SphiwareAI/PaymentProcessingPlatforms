@@ -75,7 +75,7 @@ def get_suppliers():
         connection.close()
     return suppliers
 
-@app.route('/track_payments', methods=['GET', 'POST'])
+#@app.route('/track_payments', methods=['GET', 'POST'])
 
 @app.route('/track_payments', methods=['GET', 'POST'])
 def track_payments():

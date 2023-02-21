@@ -12,64 +12,54 @@
     </style>
 </head>
 
+<body>
+    <div>
+        <h1>Supplier Information</h1>
+    </div>
 
-    <head>
-        <style>
-            h1 {
-                margin: auto;
-                width: 300px;
-                background: white;
-            }
-        </style>
-    </head>
-   
-        <div>
-            <h1>Supplier Information</h1>
-        </div>
-    </body>
-
-        
-        <form action="{{ url_for('track_payments') }}" method="post" enctype="multipart/form-data">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
-            <br><br>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-            <br><br>
-            <label for="department">Department:</label>
-            <input type="text" id="department" name="department" required>
-            <br><br>
-            <label for="date_of_invoice">Date of Invoice:</label>
-            <input type="month" id="date_of_invoice" name="date_of_invoice" required>
-            <br><br>
-            <label for="date_of_payment_requested">Date of Payment Requested:</label>
-            <input type="month" id="date_of_payment_requested" name="date_of_payment_requested" required>
-            <br><br>
-            <label for="payment_made_to">Payment Made To:</label>
-            <input type="text" id="payment_made_to" name="payment_made_to" required>
-            <br><br>
-            <label for="company_name">Name Of Company:</label>
-            <input type="text" id="company_name" name="company_name" required>
-            <br><br>
-            <label for="payment_description">Payment Description:</label>
-            <input type="text" id="payment_description" name="payment_description" required>
-            <br><br>
-            <label for="bank_name">Bank Name:</label>
-            <input type="text" id="bank_name" name="bank_name" required>
-            <br><br>
-            <label for="acc_number">Account Number:</label>
-            <input type="text" id="acc_number" name="acc_number" required>
-            <br><br>
-            <label for="branch_code">Branch Code:</label>
-            <input type="text" id="branch_code" name="branch_code" required>
-            <br><br>
-            <label for="amount">Amount:</label>
-            <input type="text" id="amount" name="amount" required>
-            <br><br>
-            <label for="invoice">Invoice:</label>
-            <input type="file" id="invoice" name="invoice" required>
-            <input type="submit" value="Submit">
-        </form>
+    <form action="{{ url_for('capture') }}" method="POST" enctype="multipart/form-data">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br><br>
+        <label for="surname">Surname:</label>
+        <input type="text" id="surname" name="surname" required>
+        <br><br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <br><br>
+        <label for="department">Department:</label>
+        <input type="text" id="department" name="department" required>
+        <br><br>
+        <label for="date_of_invoice">Date of Invoice:</label>
+        <input type="month" id="date_of_invoice" name="date_of_invoice" required>
+        <br><br>
+        <label for="date_of_payment_requested">Date of Payment Requested:</label>
+        <input type="month" id="date_of_payment_requested" name="date_of_payment_requested" required>
+        <br><br>
+        <label for="payment_made_to">Payment Made To:</label>
+        <input type="text" id="payment_made_to" name="payment_made_to" required>
+        <br><br>
+        <label for="company_name">Name Of Company:</label>
+        <input type="text" id="company_name" name="company_name" required>
+        <br><br>
+        <label for="payment_description">Payment Description:</label>
+        <input type="text" id="payment_description" name="payment_description" required>
+        <br><br>
+        <label for="bank_name">Bank Name:</label>
+        <input type="text" id="bank_name" name="bank_name" required>
+        <br><br>
+        <label for="acc_number">Account Number:</label>
+        <input type="text" id="acc_number" name="acc_number" required>
+        <br><br>
+        <label for="branch_code">Branch Code:</label>
+        <input type="text" id="branch_code" name="branch_code" required>
+        <br><br>
+        <label for="amount">Amount:</label>
+        <input type="text" id="amount" name="amount" required>
+        <br><br>
+        <input type="file" name="invoice" accept=".pdf"><br><br>
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
 </body>
 </html>
-

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Supplier Dashboard</title>
+  </head>
+  <body>
+    <h1>Welcome to Supplier Dashboard</h1>
+    
+    <table>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer Name</th>
+        <th>Order Details</th>
+        <th>Order Status</th>
+        <th>Action</th>
+      </tr>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.customer_name }}</td>
+        <td>{{ order.details }}</td>
+        <td>{{ order.status }}</td>
+        <td>
+          {% if order.status == 'New' %}
+          <form action="/update_order" method="POST">
+            <input type="hidden" name="order_id" value="{{ order.id }}">
+            <input type="submit" value="Accept">
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    
+  </body>
+</html>
+

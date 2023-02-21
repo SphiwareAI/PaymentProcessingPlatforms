@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Supplier</title>
+</head>
+<body>
+    <h1>Select a Supplier</h1>
+    <form method="POST">
+        <select name="supplier_id">
+            {% for supplier in suppliers %}
+            <option value="{{ supplier[0] }}">{{ supplier[1] }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Send for Manager Approval">
+    </form>
+</body>
+</html>
+

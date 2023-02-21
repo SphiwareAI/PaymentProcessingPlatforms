@@ -62,6 +62,6 @@ def check_user(username, password):
     else:
         return False
     
-conn.commit()
+cursor.close()
 conn.close()
 
