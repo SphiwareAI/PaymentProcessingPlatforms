@@ -4,11 +4,63 @@
     <meta charset="UTF-8">
     <title>Payment Capture Form</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: green;
+            text-align: center;
+            margin-top: 50px;
+        }
+
         form {
             width: 50%;
             margin: 0 auto;
             text-align: center;
         }
+
+        label {
+            display: inline-block;
+            width: 150px;
+            text-align: right;
+            margin-right: 20px;
+            margin-bottom: 10px;
+            color: #424242;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 300px;
+            box-sizing: border-box;
+            font-size: 14px;
+            color: #424242;
+        }
+
+        input[type="submit"] {
+            display: block;
+            background-color: green;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            width: 150px;
+            font-size: 14px;
+        }
+
+            input[type="submit"]:hover {
+                background-color: #fff;
+                color: green;
+                border: 1px solid green;
+            }
+
     </style>
 </head>
 
@@ -30,20 +82,8 @@
         <label for="department">Department:</label>
         <input type="text" id="department" name="department" required>
         <br><br>
-        <label for="date_of_invoice">Date of Invoice:</label>
-        <input type="month" id="date_of_invoice" name="date_of_invoice" required>
-        <br><br>
-        <label for="date_of_payment_requested">Date of Payment Requested:</label>
-        <input type="month" id="date_of_payment_requested" name="date_of_payment_requested" required>
-        <br><br>
-        <label for="payment_made_to">Payment Made To:</label>
-        <input type="text" id="payment_made_to" name="payment_made_to" required>
-        <br><br>
         <label for="company_name">Name Of Company:</label>
         <input type="text" id="company_name" name="company_name" required>
-        <br><br>
-        <label for="payment_description">Payment Description:</label>
-        <input type="text" id="payment_description" name="payment_description" required>
         <br><br>
         <label for="bank_name">Bank Name:</label>
         <input type="text" id="bank_name" name="bank_name" required>
@@ -53,11 +93,6 @@
         <br><br>
         <label for="branch_code">Branch Code:</label>
         <input type="text" id="branch_code" name="branch_code" required>
-        <br><br>
-        <label for="amount">Amount:</label>
-        <input type="text" id="amount" name="amount" required>
-        <br><br>
-        <input type="file" name="invoice" accept=".pdf"><br><br>
         <br><br>
         <input type="submit" value="Submit">
     </form>

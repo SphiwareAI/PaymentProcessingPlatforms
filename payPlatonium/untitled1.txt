@@ -1,0 +1,32 @@
+# Define route for displaying suppliers with pending payments
+@app.route('/display_select_suppliers', methods=['GET', 'POST'])
+def display_select_suppliers():
+    if request.method == 'POST':
+        # Get the supplier ID from the form
+        supplier_name = request.form['supplier_name']
+
+        # Connect to the payments database and update the status for the given supplier ID
+        conn_payments = get_payments_connection()
+        c_payments = conn_payments.cursor()
+        c_payments.execute("UPDATE payments SET status = 'pending' WHERE supplier_id = ?", (supplier_name,))
+        conn_payments.commit()
+
+        # Close the connections
+        c_payments.close()
+        conn_payments.close()
+
+        # Redirect the user to the track_payments page with a success message
+        flash('Supplier selected and sent for manager approval!')
+        return redirect(url_for('track_payments'))
+
+    # Connect to the suppliers database and get all suppliers
+    conn_suppliers = get_suppliers_connection()
+    c_suppliers = conn_suppliers.cursor()
+    c_suppliers.execute("SELECT * FROM suppliers")
+    suppliers = c_suppliers.fetchall()
+
+    # Close the connections
+    c_suppliers.close()
+    conn_suppliers.close()
+
+    return render_template("display_select_suppliers.html", suppliers=suppliers)

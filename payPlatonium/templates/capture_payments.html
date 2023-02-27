@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Capture Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <main>
+        <h1>Capture Payment Information</h1>
+        <form method="post" action="{{ url_for('capture_payments') }}" enctype="multipart/form-data">
+            <div class="form-group">
+            <label for="supplier_id">Supplier ID:</label>
+            <input type="number" class="form-control" id="supplier_id" name="supplier_id" required>
+            </div>
+            <div class="form-group">
+                <label for="supplier_name">Supplier Name:</label>
+                <select class="form-control" id="supplier_name" name="supplier_name">
+                    {% for supplier in suppliers %}
+                    <option value="{{ supplier[1] }}">{{ supplier[2] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="date_of_invoice">Date of Invoice:</label>
+                <input type="date" class="form-control" id="date_of_invoice" name="date_of_invoice" required>
+            </div>
+            <div class="form-group">
+                <label for="date_of_payment_requested">Date of Payment Requested:</label>
+                <input type="date" class="form-control" id="date_of_payment_requested"
+                       name="date_of_payment_requested" required>
+            </div>
+            <div class="form-group">
+                <label for="payment_description">Payment Description:</label>
+                <textarea class="form-control" id="payment_description" name="payment_description" rows="3"
+                          required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
+            </div>
+            <div class="form-group">
+                <label for="invoice">Invoice:</label>
+                <input type="file" class="form-control-file" id="invoice" name="invoice" required>
+            </div>
+            <button type="submit" class="btn btn-primary" name="submit_button" value="send_for_approval">
+                Send for Manager Approval
+            </button>
+        </form>
+    </main>
+</body>
+</html>

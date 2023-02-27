@@ -1,18 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Select Supplier</title>
-</head>
-<body>
-    <h1>Select a Supplier</h1>
-    <form method="POST">
-        <select name="supplier_id">
-            {% for supplier in suppliers %}
-            <option value="{{ supplier[0] }}">{{ supplier[1] }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Send for Manager Approval">
-    </form>
-</body>
-</html>
+    th, td {
+        padding: 10px;
+        text-align: center;
+    }
 
+    tr:nth-child(even){background-color: #f2f2f2}
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    form {
+        margin: 0 auto;
+        text-align: center;
+    }
+</style>
+
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Surname</th>
+        <th>Email</th>
+        <th>Company</th>
+        <th>Select</th>
+    </tr>
+    {% for supplier in suppliers %}
+    <tr>
+        <td>{{ supplier[0] }}</td>
+        <td>{{ supplier[1] }}</td>
+        <td>{{ supplier[2] }}</td>
+        <td>{{ supplier[3] }}</td>
+        <td>{{ supplier[4] }}</td>
+        <td>
+            <form action="{{ url_for('capture') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" id="supplier_id" name="supplier_id" value="{{ supplier[0] }}">
+                <input type="submit" value="Select">
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

@@ -1,16 +1,90 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Home</title>
-  </head>
-  <body>
-    <h1>Welcome to the Payment System</h1>
+<head>
+    <title>payPlatonium</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: green; /* changed color to green */
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        p {
+            color: #424242;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        li {
+            display: inline-block;
+            margin: 10px;
+        }
+
+        a {
+            display: block;
+            background-color: #4CAF50; /* changed color to green */
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+            a.small {
+                padding: 5px;
+                font-size: 0.8em;
+            }
+
+            a:hover {
+                background-color: #fff;
+                color: #4CAF50; /* changed color to green */
+                border: 1px solid #4CAF50; /* changed color to green */
+            }
+
+        .login-link {
+            color: #424242;
+            text-align: center;
+            margin-top: 30px;
+            display: block;
+        }
+
+            .login-link a {
+                color: #4CAF50; /* changed color to green */
+                font-weight: bold; /* added bold font weight */
+                text-transform: uppercase; /* added uppercase text transform */
+                border: 2px solid #4CAF50; /* added border */
+                padding: 8px 20px; /* increased padding */
+                border-radius: 20px; /* added border radius */
+                transition: all 0.3s ease;
+            }
+
+                .login-link a:hover {
+                    background-color: #4CAF50; /* changed color to green */
+                    color: #fff;
+                    border: 2px solid #fff;
+                }
+    </style>
+</head>
+<body>
+    <h1>Welcome to payPlatonium</h1>
     <p>Please select an option:</p>
     <ul>
-      <li><a href="/capture">Capture Payment</a></li>
-      <li><a href="/display_select_suppliers">Select Suppliers</a></li>
+        <li><a href="/capture">Capture Payment</a></li>
+        <li><a href="/payment_analytics">Payment Analytics</a></li>
     </ul>
-    <p>Login? <a href="/login">Log in here</a>.</p>
-  </body>
+    <p class="login-link"> <a class="big" href="/login">Log in here</a>.</p>
+</body>
 </html>
-

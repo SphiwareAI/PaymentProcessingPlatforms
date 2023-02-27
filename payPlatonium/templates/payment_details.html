@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Payment Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manager.css') }}">
+</head>
+<body>
+    <h1>Payment Details</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier Name</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ payment['id'] }}</td>
+                <td>{{ payment['supplier_name'] }}</td>
+                <td>{{ payment['amount'] }}</td>
+                <td>{{ payment['description'] }}</td>
+                <td>{{ payment['status'] }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% if payment['status'] == 'approved' %}
+    <h2>Bank Account Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name Of Company</th>
+                <th>Bank Name</th>
+                <th>Account Number</th>
+                <th>Branch Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ payment['company_name'] }}</td>
+                <td>{{ payment['bank_name'] }}</td>
+                <td>{{ payment['acc_number'] }}</td>
+                <td>{{ payment['branch_code'] }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+</html>

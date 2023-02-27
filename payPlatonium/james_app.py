@@ -1,17 +1,29 @@
-from flask import Flask, g, render_template, request, redirect, url_for, session, flash
+from flask import Flask, g, render_template, request, redirect, url_for, session, flash, Response
 import sqlite3
 from users import create_database, create_table, insert_sample_users, check_user
 from werkzeug.utils import secure_filename
 from flask_session import Session
 from page import generate_cover_page
 import os
-
+import random
+import pdfkit
 import os.path
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from flask import make_response
+
+from flask import send_file
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+
+
+from utils.pdf_utils import generate_pdf, generate_payment_pdf
 
 
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 # Configure Flask-Session
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
@@ -29,6 +41,12 @@ MANAGERS = 2
 @app.route('/')
 def home():
     return render_template('home.html')
+
+
+# AI Analytics. thius is where we are going to upograde the system 
+@app.route('/payment_analytics')
+def payment_analytics():
+    return render_template('payment_analytics.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -99,15 +117,7 @@ def dashboard():
         return render_template('manager_dashboard.html', payments=payments)
 
 
-@app.teardown_appcontext
-def close_db(error):
-    payments_conn = getattr(g, '_payments_conn', None)
-    if payments_conn is not None:
-        payments_conn.close()
 
-    suppliers_conn = getattr(g, '_suppliers_conn', None)
-    if suppliers_conn is not None:
-        suppliers_conn.close()
 
 def get_suppliers():
     with get_suppliers_connection() as conn:
@@ -130,6 +140,20 @@ def get_suppliers_connection():
         g._suppliers_conn = conn
     return conn
 
+def generate_payment_id():
+    # Connect to the payments database and get the latest payment ID
+    conn_payments = sqlite3.connect('payments.db')
+    c_payments = conn_payments.cursor()
+    c_payments.execute("SELECT MAX(id) FROM payments")
+    result = c_payments.fetchone()[0]
+    conn_payments.close()
+
+    # Increment the latest payment ID by 1 to generate a new unique payment ID
+    if result is not None:
+        return result + 1
+    else:
+        return 1
+    
 @app.route('/capture', methods=['GET', 'POST'])
 def capture():
     suppliers = get_suppliers()
@@ -139,139 +163,177 @@ def capture():
         surname = request.form['surname']
         email = request.form['email']
         department = request.form['department']
-        date_of_invoice = request.form['date_of_invoice']
-        date_of_payment_requested = request.form['date_of_payment_requested']
-        payment_made_to = request.form['payment_made_to']
         company_name = request.form['company_name']
-        payment_description = request.form['payment_description'] 
         bank_name = request.form['bank_name']
         acc_number = request.form['acc_number']
         branch_code = request.form['branch_code']
+        
+        # Connect to the suppliers database
+        conn = sqlite3.connect('suppliers.db')
+        cursor = conn.cursor()
+
+        # Insert the captured data into the suppliers table
+        cursor.execute('INSERT INTO suppliers (name, surname, email, department, company_name, bank_name, acc_number, branch_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                       (name, surname, email, department, company_name, bank_name, acc_number, branch_code))
+        conn.commit()
+        conn.close()
+
+        # redirect to display_select_suppliers function
+        return redirect(url_for('capture_payments'))
+
+    return render_template("capture.html", suppliers=suppliers)
+
+
+
+@app.route('/capture_payments', methods=['GET', 'POST'])
+def capture_payments():
+    if request.method == 'POST':
+        # Get the form data
+        supplier_id = request.form['supplier_id']
+        supplier_name = request.form['supplier_name']
+        date_of_invoice = request.form['date_of_invoice']
+        date_of_payment_requested = request.form['date_of_payment_requested']
+        payment_description = request.form['payment_description']
         amount = request.form['amount']
-        
-        # upload files
+        status = 'pending'
         invoice = request.files['invoice']
-        #signature = request.files['signature']
-        
-        # Save the payment information to a database
-        with get_payments_connection() as conn:
-            c = conn.cursor()
-            c.execute("INSERT INTO payments (name, surname, email, department, date_of_invoice, date_of_payment_requested, payment_made_to, company_name, payment_description, bank_name, acc_number, branch_code, amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (name, surname, email, department, date_of_invoice, date_of_payment_requested, payment_made_to, company_name, payment_description, bank_name, acc_number, branch_code, amount))
-            payment_id = c.lastrowid
-        
+
         # Save uploaded files to disk
         invoice_filename = secure_filename(invoice.filename)
+        payment_id = generate_payment_id()
         invoice_path = os.path.join('uploads', str(payment_id), 'invoice', invoice_filename)
         os.makedirs(os.path.dirname(invoice_path), exist_ok=True)
         invoice.save(invoice_path)
 
-        # Generate PDF cover page
-        cover_page_path = os.path.join('uploads', str(payment_id), 'cover_page.pdf')
-        generate_cover_page(cover_page_path, name, surname, email, department, date_of_invoice, date_of_payment_requested, payment_made_to, company_name, payment_description, bank_name, acc_number, branch_code, amount)
-        
-        # Redirect to manager approval page
-        return redirect(url_for('display_select_suppliers', payment_id=payment_id))
-        
-    return render_template("capture.html", suppliers=suppliers)
-
-
- # Define route for displaying suppliers with pending payments
-with sqlite3.connect(db_path) as db:
-    
-    @app.route('/display_select_suppliers', methods=['GET', 'POST'])
-    def display_select_suppliers():
-        if request.method == 'POST':
-            # Get the supplier ID from the form
-            
-            supplier_id = request.form['supplier_id']
-
-            # Connect to the payments database and update the status for the given supplier ID
-            conn_payments = get_payments_connection()
-            c_payments = conn_payments.cursor()
-            c_payments.execute("UPDATE payments SET status = 'pending' WHERE supplier_id = ?", (supplier_id,))
-            conn_payments.commit()
-
-            # Close the connections
-            c_payments.close()
-            conn_payments.close()
-
-            # Redirect the user to the track_payments page with a success message
-            flash('Supplier selected and sent for manager approval!')
-            return redirect(url_for('track_payments'))
-
-        # might be redundant
-        # Connect to the payments database and get all pending payments
+        # Connect to the payments database and insert the new payment
         conn_payments = get_payments_connection()
         c_payments = conn_payments.cursor()
-        c_payments.execute("SELECT * FROM payments WHERE status = 'pending'")
-        payments = c_payments.fetchall()
-    
-    
-        # Connect to the suppliers database and get all suppliers with pending payments
-        conn_suppliers = get_suppliers_connection()
-        c_suppliers = conn_suppliers.cursor()
-        c_suppliers.execute("SELECT * FROM suppliers WHERE id IN (SELECT supplier_id FROM payments WHERE status = 'pending')")
-        suppliers = c_suppliers.fetchall()
-
-        # Close the connections
-        c_suppliers.close()
-        conn_suppliers.close()
-
-        # Connect to the payments database and get all pending payments
-        conn_payments = get_payments_connection()
-        c_payments = conn_payments.cursor()
-        c_payments.execute("SELECT * FROM payments WHERE status = 'pending'")
-        payments = c_payments.fetchall()
+        c_payments.execute("INSERT INTO payments (supplier_id, supplier_name, date_of_invoice, date_of_payment_requested, payment_description, amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (supplier_id, supplier_name, date_of_invoice, date_of_payment_requested, payment_description, amount, status))
+        conn_payments.commit()
 
         # Close the connections
         c_payments.close()
         conn_payments.close()
 
-        return render_template("display_select_suppliers.html", suppliers=suppliers, payments=payments)
+        # Generate the PDF document
+        pdf_bytes = generate_pdf(payment_id, supplier_name, date_of_invoice, date_of_payment_requested, payment_description, amount, status)
+        pdf_path = os.path.join('uploads', str(payment_id), 'payment.pdf')
+        os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+        with open(pdf_path, 'wb') as f:
+            f.write(pdf_bytes)
 
-    
-
-
-
-@app.route('/manage_payments', methods=['GET', 'POST'])
-def manage_payments():
-    if request.method == 'POST':
-        # Get the IDs and approval statuses from the form
-        ids = request.form.getlist('id')
-        statuses = request.form.getlist('status')
-
-        # Update the payment statuses in the database
-        conn = sqlite3.connect('payments.db')
-        c = conn.cursor()
-        for i in range(len(ids)):
-            c.execute("UPDATE payments SET status = ? WHERE id = ?", (statuses[i], ids[i]))
-        conn.commit()
-        conn.close()
-
-        # Redirect the user to the track_payments page with a success message
-        flash('Payment statuses updated!')
+        flash('Payment captured and sent for manager approval!')
         return redirect(url_for('track_payments'))
 
-    # Connect to the suppliers and payments databases and get all the suppliers with pending payments
-    conn = sqlite3.connect('suppliers.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM suppliers WHERE id IN (SELECT supplier_id FROM payments WHERE status = 'pending')")
-    suppliers = c.fetchall()
-    conn.close()
+    # Connect to the suppliers database and get all suppliers
+    conn_suppliers = get_suppliers_connection()
+    c_suppliers = conn_suppliers.cursor()
+    c_suppliers.execute("SELECT * FROM suppliers")
+    suppliers = c_suppliers.fetchall()
 
-    # Get the payment information for the pending payments
-    conn = sqlite3.connect('payments.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM payments WHERE status = 'pending'")
-    payments = c.fetchall()
-    conn.close()
+    # Close the connections
+    c_suppliers.close()
+    conn_suppliers.close()
 
-    return render_template("manage_payments.html", suppliers=suppliers, payments=payments)
+    return render_template("capture_payments.html", suppliers=suppliers)
+
+def get_db():
+    if 'db' not in g:
+        g.db = sqlite3.connect('payments.db')
+    return g.db
+
+def close_db(e=None):
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
 
 
+@app.route('/manager_dashboard', methods=['GET', 'POST'])
+def manager_dashboard():
+    db = get_db()
 
+    if request.method == 'POST':
+        # Get form data
+        payment_id = request.form['payment_id']
+        supplier_name = request.form['supplier_name']
+        amount = request.form['amount']
+        status = request.form['status']
+        signature = request.files['signature']
+
+        # Update payment status
+        db.execute('UPDATE payments SET status=? WHERE id=?', [status, payment_id])
+        db.commit()
+        
+        
+
+        # Get payment details
+        cur = db.execute('SELECT payments.payment_description, suppliers.company_name FROM payments INNER JOIN suppliers ON payments.supplier_id = suppliers.id WHERE payments.id=?', [supplier_name])
+        payment = cur.fetchone()
+        
+        # Generate PDF with payment details and manager's signature
+        pdf = generate_payment_pdf(payment, signature)
+
+        # Save payment information and PDF to disk
+        payment_info = f"Payment ID: {payment_id}\nSupplier Name: {supplier_name}\nAmount: {amount}\nStatus: {status}\n"
+        payment_file = open(f"uploads/payment_{payment_id}.txt", "w")
+        payment_file.write(payment_info)
+        payment_file.close()
+        pdf_file = open(f"uploads/payment_{payment_id}.pdf", "wb")
+        pdf_file.write(pdf)
+        pdf_file.close()
+            
+        
+        return redirect(url_for('payment_confirmation', payment_id=payment_id))
+
+    # Get pending payments
+    cur = db.execute('SELECT payments.id, suppliers.name AS supplier_name, suppliers.company_name, payments.amount, payments.status FROM payments INNER JOIN suppliers ON payments.supplier_id = suppliers.id WHERE payments.status="pending" ORDER BY suppliers.name')
+    payments = cur.fetchall()
+
+    # Get payment IDs, supplier names, and amounts for dropdowns
+    cur = db.execute('SELECT id FROM payments WHERE status="pending" ORDER BY id')
+    payment_ids = [row['id'] for row in cur.fetchall()]
+
+    cur = db.execute('SELECT name FROM suppliers ORDER BY name')
+    supplier_names = [row['name'] for row in cur.fetchall()]
+
+    cur = db.execute('SELECT amount FROM payments WHERE status="pending" ORDER BY amount')
+    amounts = [row['amount'] for row in cur.fetchall()]
+
+    return render_template('manager_dashboard.html', payments=payments, payment_ids=payment_ids, supplier_names=supplier_names, amounts=amounts)
+
+
+@app.route('/payment_confirmation', methods=['GET', 'POST'])
+def payment_confirmation(payment_id=None):
+    # Check if payment_id is None or empty
+    if payment_id is None or payment_id == '':
+        return "Invalid payment ID"
     
-   
+    # Connect to the payments database and retrieve the payment information
+    conn_payments = sqlite3.connect('payments.db')
+    c_payments = conn_payments.cursor()
+    c_payments.execute("SELECT * FROM payments WHERE payment_id=?", (payment_id,))
+    payment = c_payments.fetchone()
+    
+    # Check if the payment status is already approved
+    if payment is None:
+        return "Payment not found"
+    elif payment[4] == 'approved':
+        return "Payment has already been approved"
+    
+    # Connect to the suppliers database and retrieve the supplier information
+    conn_suppliers = sqlite3.connect('suppliers.db')
+    c_suppliers = conn_suppliers.cursor()
+    c_suppliers.execute("SELECT * FROM suppliers WHERE supplier_id=?", (payment[1],))
+    supplier = c_suppliers.fetchone()
+    
+    # Update the payment status to approved in the payments database
+    c_payments.execute("UPDATE payments SET status='approved' WHERE payment_id=?", (payment_id,))
+    conn_payments.commit()
+    
+    # Render the payment confirmation template with the payment and supplier information
+    return render_template('payment_confirmation.html', payment=payment, supplier=supplier)
+
 
 
 @app.route('/track_payments', methods=['GET', 'POST'])

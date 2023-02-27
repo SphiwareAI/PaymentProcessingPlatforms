@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Confirmation</title>
+</head>
+<body>
+    <h1>Payment Confirmation</h1>
+    <p>
+        Thank you for approving this payment. Please find the payment details and supplier information
+        below:
+    </p>
+    {% for payment in payments %}
+    <tr>
+        <td>{{ payment[1] }}</td>
+        <td>{{ payment[2] }}</td>
+        <td>{{ payment[3] }}</td>
+        <td>{{ payment[4] }}</td>
+        <td>
+            <form method="POST">
+                <input type="hidden" name="payment_id" value="{{ payment[0] }}">
+                <select name="status">
+                    <option value="approved">Approve</option>
+                    <option value="rejected">Reject</option>
+                </select>
+                <input type="submit" value="Submit">
+            </form>
+        </td>
+        {% set supplier = suppliers[loop.index0] %}
+        <td>{{ supplier[1] }}</td>
+    </tr>
+    {% endfor %}
+
+</body>
+</html>
