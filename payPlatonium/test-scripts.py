@@ -1,25 +1,18 @@
 import sqlite3
 
+# Connect to the database
 conn = sqlite3.connect('payments.db')
-c = conn.cursor()
 
-#c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='payments'")
-#if c.fetchone():
-#    print("Table exists")
-#else:
-#    print("Table does not exist")
+# Create a cursor object
+cursor = conn.cursor()
 
-#c.close()
+# Execute a SELECT statement to retrieve all rows from the payments table
+cursor.execute('SELECT * FROM payments')
 
-# Retrieve all data from the payments table
-cur = conn.cursor()
-cur.execute("SELECT * FROM payments")
-rows = cur.fetchall()
-
-# Print the data
+# Fetch all rows and print them
+rows = cursor.fetchall()
 for row in rows:
     print(row)
 
-#print(rows[0][5])
 # Close the database connection
 conn.close()

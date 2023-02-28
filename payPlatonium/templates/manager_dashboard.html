@@ -9,16 +9,23 @@
 <body>
     <div class="container">
         <h1 class="heading">Manager Dashboard</h1>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="post" action="{{ url_for('manager_dashboard') }}" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="payment_id" class="label">Payment ID:</label>
                 <select name="payment_id" class="select">
                     {% for payment in payments %}
-                    <option value="{{ payment[0] }}">{{ payment[0] }} - {{ payment[1] }} - ${{ payment[2] }}</option>
+                    <option value="{{ payment[0] }}">{{ payment[0] }}</option>
                     {% endfor %}
                 </select>
             </div>
-
+            <div class="form-group">
+                <label for="supplier_name" class="label">Supplier Name:</label>
+                <input type="text" name="supplier_name" class="text">
+            </div>
+            <div class="form-group">
+                <label for="amount" class="label">Amount:</label>
+                <input type="text" name="amount" class="text">
+            </div>
             <div class="form-group">
                 <label for="status" class="label">Status:</label>
                 <select name="status" class="select">
@@ -26,7 +33,6 @@
                     <option value="rejected">Reject</option>
                 </select>
             </div>
-
             <div class="form-group">
                 <label for="signature" class="label">Manager Signature:</label>
                 <input type="file" name="signature" class="file">
@@ -36,6 +42,8 @@
                 <button type="submit" name="submit" class="button">Process Request</button>
             </div>
         </form>
+    </div>
+    </form>
     </div>
 </body>
 </html>

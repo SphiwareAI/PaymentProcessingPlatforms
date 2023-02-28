@@ -4,6 +4,13 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+
+
 
 
 def generate_pdf(payment_id, supplier_name, date_of_invoice, date_of_payment_requested, payment_description, amount, status):
@@ -53,7 +60,7 @@ def generate_pdf(payment_id, supplier_name, date_of_invoice, date_of_payment_req
     return buffer.read()
 
 
-def generate_payment_pdf(payment_id, supplier_name, amount, status, signature):
+def generate_payment_pdf(db, payment_id, supplier_name, amount, status, signature):
     # Create a buffer for the PDF document
     buffer = io.BytesIO()
 
@@ -61,10 +68,18 @@ def generate_payment_pdf(payment_id, supplier_name, amount, status, signature):
     p = canvas.Canvas(buffer, pagesize=letter)
     p.setTitle(f'Payment request for: {supplier_name}')
 
+    # Get payment details from the database
+    try:
+        cur = db.execute('SELECT payment_description, company_name FROM payments INNER JOIN suppliers ON payments.supplier_id = suppliers.id WHERE payments.id=?', [payment_id])
+        payment = cur.fetchone()
+    except Exception as e:
+        # Handle database query error
+        return None
+
     # Create a table to display payment details
     table = [
         ['Payment ID:', payment_id],
-        ['Supplier Name:', supplier_name],
+        ['Supplier Name:', payment['company_name']],
         ['Amount:', amount],
         ['Status:', status]
     ]

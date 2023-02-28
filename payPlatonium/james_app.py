@@ -178,7 +178,7 @@ def capture():
         conn.commit()
         conn.close()
 
-        # redirect to display_select_suppliers function
+        # redirect to capture_payments function
         return redirect(url_for('capture_payments'))
 
     return render_template("capture.html", suppliers=suppliers)
@@ -249,9 +249,12 @@ def close_db(e=None):
         db.close()
 
 
+
+
 @app.route('/manager_dashboard', methods=['GET', 'POST'])
 def manager_dashboard():
     db = get_db()
+    print('is the pdf generated?')
 
     if request.method == 'POST':
         # Get form data
@@ -261,29 +264,57 @@ def manager_dashboard():
         status = request.form['status']
         signature = request.files['signature']
 
+        # Save uploaded files to disk
+        try:
+            signature_filename = secure_filename(signature.filename)
+            signature_path = os.path.join('static', signature_filename)
+            signature.save(signature_path)
+        except Exception as e:
+            # Handle file save error
+            return "Error: " + str(e)
+
         # Update payment status
-        db.execute('UPDATE payments SET status=? WHERE id=?', [status, payment_id])
-        db.commit()
-        
-        
+        try:
+            db.execute('UPDATE payments SET status=? WHERE id=?', [status, payment_id])
+            db.commit()
+        except Exception as e:
+            # Handle database update error
+            return "Error: " + str(e)
 
         # Get payment details
-        cur = db.execute('SELECT payments.payment_description, suppliers.company_name FROM payments INNER JOIN suppliers ON payments.supplier_id = suppliers.id WHERE payments.id=?', [supplier_name])
-        payment = cur.fetchone()
-        
-        # Generate PDF with payment details and manager's signature
-        pdf = generate_payment_pdf(payment, signature)
+        try:
+            cur = db.execute('SELECT payments.payment_description, suppliers.company_name FROM payments INNER JOIN suppliers ON payments.supplier_id = suppliers.id WHERE payments.id=?', [payment_id])
+            payment = cur.fetchone()
+        except Exception as e:
+            # Handle database query error
+            return "Error: " + str(e)
 
-        # Save payment information and PDF to disk
-        payment_info = f"Payment ID: {payment_id}\nSupplier Name: {supplier_name}\nAmount: {amount}\nStatus: {status}\n"
-        payment_file = open(f"uploads/payment_{payment_id}.txt", "w")
-        payment_file.write(payment_info)
-        payment_file.close()
-        pdf_file = open(f"uploads/payment_{payment_id}.pdf", "wb")
-        pdf_file.write(pdf)
-        pdf_file.close()
-            
-        
+        payment = cur.fetchone()
+        if payment is None:
+            return "Error: payment not found"
+        pdf = generate_payment_pdf(db, payment_id, payment['company_name'], amount, status, signature)
+
+        # Save payment information and PDF to disk without signature
+        pdf_path = os.path.join('uploads/payments', str(payment_id), 'payment_unsigned.pdf')
+        os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+        with open(pdf_path, 'wb') as f:
+            f.write(pdf)
+
+        # Open saved PDF and insert signature
+        from PyPDF2 import PdfFileWriter, PdfFileReader
+        output_pdf_path = os.path.join('uploads/payments', str(payment_id), 'payment_signed.pdf')
+        output_pdf = PdfFileWriter()
+        input_pdf_path = pdf_path
+        with open(input_pdf_path, 'rb') as input_pdf_file:
+            input_pdf = PdfFileReader(input_pdf_file)
+            signature_page = input_pdf.getPage(0)
+            signature_image = PdfFileReader(open(signature_path, 'rb')).getPage(0)
+            signature_page.mergePage(signature_image)
+            output_pdf.addPage(signature_page)
+            with open(output_pdf_path, 'wb') as f:
+                output_pdf.write(f)
+
+        print('is the pdf generated?')
         return redirect(url_for('payment_confirmation', payment_id=payment_id))
 
     # Get pending payments

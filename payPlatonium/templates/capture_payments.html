@@ -18,7 +18,7 @@
                 <label for="supplier_name">Supplier Name:</label>
                 <select class="form-control" id="supplier_name" name="supplier_name">
                     {% for supplier in suppliers %}
-                    <option value="{{ supplier[1] }}">{{ supplier[2] }}</option>
+                    <option value="{{ supplier[0] }}">{{ supplier[1] }}</option>
                     {% endfor %}
                 </select>
             </div>

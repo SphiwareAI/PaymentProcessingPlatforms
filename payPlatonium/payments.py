@@ -37,7 +37,7 @@ payments_cursor.execute('''
         date_of_payment_requested DATE NOT NULL,
         payment_description TEXT NOT NULL,
         amount REAL NOT NULL,
-        status TEXT NOT NULL CHECK(status IN ('paid', 'not paid', 'pending')),
+        status TEXT NOT NULL CHECK(status IN ('approved', 'rejected', 'pending')),
         FOREIGN KEY(supplier_id) REFERENCES suppliers(id)
     )
 ''')
